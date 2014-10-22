@@ -1,0 +1,34 @@
+#!/bin/ruby
+
+files = %x(git diff-index --cached HEAD).split(' ')
+nofiles = files.size / 5
+newfiles = []
+
+nofiles.times { |x| newfiles.push files[((x+1)*6)-1] }
+
+exit 0 if newfiles.eql? []
+
+puts "Testing files:\n#{newfiles.join("\n")}"
+
+result = %x(rubocop -a #{newfiles.join(' ')})
+
+firstpass = result.lines[1].gsub('.','').strip.eql? ''
+
+if firstpass 
+  puts 'No errors found - continuing with commit!'
+  exit 0
+end
+
+nextresult = %x(rubocop #{newfiles.join(' ')})
+
+resultlines = nextresult.lines.map{ |x| x.strip }
+
+if resultlines.index('Offenses:').nil?
+  puts 'Errors were found, but were auto-corrected - continuing with commit...'
+  exit 0
+end
+
+puts resultlines.slice(resultlines.index('Offenses:'), resultlines.size-3)
+
+puts 'Rubocop errors found which could not be autocorrected - please address and recommit!'
+exit 1
