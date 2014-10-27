@@ -6,7 +6,12 @@ newfiles = []
 
 nofiles.times { |x| newfiles.push files[((x+1)*6)-1] }
 
-exit 0 if newfiles.eql? []
+newfiles = newfiles.select { |x| x.end_with? '.rb' }
+
+if newfiles.eql? []
+  puts 'Nothing to test with rubocop, exiting pre-commit hook...'
+  exit 0
+end
 
 puts "Testing files:\n#{newfiles.join("\n")}"
 
@@ -14,21 +19,22 @@ result = %x(rubocop -a #{newfiles.join(' ')})
 
 firstpass = result.lines[1].gsub('.','').strip.eql? ''
 
-if firstpass 
+if firstpass
   puts 'No errors found - continuing with commit!'
   exit 0
 end
 
-nextresult = %x(rubocop #{newfiles.join(' ')})
+# Commented out so sanity of rubocop autocorrects can be tested before automatic re-commit....
+#nextresult = %x(rubocop #{newfiles.join(' ')})
 
-resultlines = nextresult.lines.map{ |x| x.strip }
+#resultlines = nextresult.lines.map{ |x| x.strip }
 
-if resultlines.index('Offenses:').nil?
-  puts 'Errors were found, but were auto-corrected - continuing with commit...'
-  exit 0
-end
+#if resultlines.index('Offenses:').nil?
+#  puts 'Errors were found, but were auto-corrected - continuing with commit...'
+#  exit 0
+#end
 
-puts resultlines.slice(resultlines.index('Offenses:'), resultlines.size-3)
+puts result.slice(result.index('Offenses:'), result.size-3)
 
-puts 'Rubocop errors found which could not be autocorrected - please address and recommit!'
+puts 'Rubocop errors found - please address and recommit!'
 exit 1
