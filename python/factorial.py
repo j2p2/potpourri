@@ -5,6 +5,12 @@ def factorial(n):
 		return n
 	else:
 		return n * factorial(n-1)
+		
+def adder(a,b):
+	return a+b
 
 if len(sys.argv) > 1:
 	print factorial(int(sys.argv[1]))
+	
+if len(sys.argv) > 2:
+	print adder(int(sys.argv[1]), int(sys.argv[2]))
