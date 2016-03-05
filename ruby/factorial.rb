@@ -1,5 +1,5 @@
 def factorial(x) 
-	return x if x < 2
+	return 1 if x < 2
 	x * factorial(x-1)
 end
 
